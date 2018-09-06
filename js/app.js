@@ -8,7 +8,10 @@ function boton_up(elemento){
   //elemento.style.width = "20%";
   console.log(elemento,"up")
 }
+
 */
+
+
 // Clase Calculadora
 var Calculadora = {
 	init: function() {
@@ -17,7 +20,6 @@ var Calculadora = {
 		this.Operaciones = {"P1":"","Oper":"","P2":""} 
 		sessionStorage.setItem('Cantidades', JSON.stringify(""))
 		sessionStorage.setItem('Operaciones', JSON.stringify(this.Operaciones))
-
 	},
 	iniciar_cero: function(){
 		var display = document.getElementById("display")
@@ -31,6 +33,8 @@ var Calculadora = {
 	    for (var i = 0; i < botonesPagina.length; i++) {
 	      botonesPagina[i].onclick = this.eventoPressBotonAccion;
 	      botonesPagina[i].onkeyup = this.eventUpBotonAccion;
+	      botonesPagina[i]["calcula"] = this.calculaOper
+	      botonesPagina[i]["ordena"] = this.ordenOper
 	    }
 	  },
 	eventoPressBotonAccion(event){
@@ -40,28 +44,39 @@ var Calculadora = {
 		var display = document.getElementById("display")
 		
 		//tecla.style.width = "18%";
-		
-		if(tecla.alt>0){
+
+		// Tecla On de reinicio
+		if(tecla.alt == "On"){
+			Calculadora.init()
+		}
+
+		//Teclas numericas
+		if(tecla.alt>=0){
 			if(tecla_val.length <=7){
 				tecla_val += tecla.alt
-				sessionStorage.setItem('Cantidades', JSON.stringify(tecla_val))
+				if(tecla_val.indexOf(".") == -1){
+					tecla_val = parseInt(tecla_val)
+				}else{
+					tecla_val = parseFloat(tecla_val)
+				}
+				sessionStorage.setItem('Cantidades', JSON.stringify(String(tecla_val)))
 			}
 			display.innerHTML = tecla_val
 		}else if(tecla.alt == "mas"){
 			display.innerHTML = ""
-			self.sortOper(tecla_val,"+")
+			self.ordena(tecla_val,"+")
 			sessionStorage.setItem('Cantidades', JSON.stringify(""))
 		}else if(tecla.alt == "menos"){
 			display.innerHTML = ""
-			self.sortOper(tecla_val,"-")
+			self.ordena(tecla_val,"-")
 			sessionStorage.setItem('Cantidades', JSON.stringify(""))
 		}else if (tecla.alt == "por"){
 			display.innerHTML = ""
-			self.sortOper(tecla_val,"*")
+			self.ordena(tecla_val,"*")
 			sessionStorage.setItem('Cantidades', JSON.stringify(""))
 		}else if(tecla.alt == "dividido"){
 			display.innerHTML = ""
-			self.sortOper(tecla_val,"/")
+			self.ordena(tecla_val,"/")
 			sessionStorage.setItem('Cantidades', JSON.stringify(""))
 		}else if(tecla.alt == "punto"){
 			if(tecla_val.indexOf(".") == -1){
@@ -77,10 +92,9 @@ var Calculadora = {
 			}
 			display.innerHTML = tecla_val
 			sessionStorage.setItem('Cantidades', JSON.stringify(tecla_val))
-		}else if(tecla.alt == "="){
-			self.calcula(display)
-		}else if(tecla.alt == "On"){
-			Calculadora.init()
+		}else if(tecla.alt == "igual"){
+			self.ordena(tecla_val,"=")
+			self.calcula()
 		}else{
 			display.innerHTML = "0"
 		}
@@ -88,44 +102,53 @@ var Calculadora = {
 	eventUpBotonAccion(event){
 		this.boton_up(event.target)
 	},
-	sumaOper: function(){
-
-	},
-	restaOper: function(){
-
-	},
-	multiplicacionOper: function(){
-
-	},
-	divicionOper: function(){
-
-	},
-	sortOper: function(cantidad,oper){
+	ordenOper: function(cantidad,oper){
 		var Operaciones = JSON.parse(sessionStorage.getItem('Operaciones'))
-		if(Operaciones.P1==""){
-			Operaciones["P1"] = cantidad
+		if (oper!="="){
 			Operaciones["Oper"] = oper
-			sessionStorage.setItem('Operaciones', JSON.stringify(Operaciones))
-		}else{
-			Operaciones["P2"] = cantidad
-			sessionStorage.setItem('Operaciones', JSON.stringify(Operaciones))
 		}
+		if(Operaciones.P1==""){
+			if(cantidad.indexOf(".") == -1){
+				Operaciones["P1"] = parseInt(cantidad)
+			}else{
+				Operaciones["P1"] = parseFloat(cantidad)
+			}
+		}else if(Operaciones.P2==""){
+			if(cantidad.indexOf(".") == -1){
+				Operaciones["P2"] = parseInt(cantidad)
+			}else{
+				Operaciones["P2"] = parseFloat(cantidad)
+			}
+		}else{
+			console.log("aqui 2 -- repite",oper,Operaciones)
+		}
+		sessionStorage.setItem('Operaciones', JSON.stringify(Operaciones))
+		console.log("aqui",oper,Operaciones)
 	},
-	boton_up: function(){
+	calculaOper: function(){
+		var Operaciones = JSON.parse(sessionStorage.getItem('Operaciones'))
+		console.log(Operaciones)
+		var resultados = ""
+		if (Operaciones["Oper"] =="+"){
+			resultados = Operaciones["P1"] + Operaciones["P2"]
+		}else if (Operaciones["Oper"] =="-"){
+			resultados = Operaciones["P1"] - Operaciones["P2"]
+		}else if (Operaciones["Oper"] =="/"){
+			resultados = Operaciones["P1"] / Operaciones["P2"]
+		}else if (Operaciones["Oper"] =="*"){
+			resultados = Operaciones["P1"] * Operaciones["P2"]
+		}else{
+			display.innerHTML = "calculando"
+		}
+		Operaciones["P1"] = resultados 
+		sessionStorage.setItem('Operaciones', JSON.stringify(Operaciones))
+		sessionStorage.setItem('Cantidades', JSON.stringify(String(resultados)))
 
-	},
-	boton_on: function(){
-
-	},
-	boton_decimal: function(){
-
-	},
-	boton_negativos: function(){
-
-	},
-	calcula: function(display){
-		//resultados a 8 digitos
-		display.innerHTML = "calculado"
+		if(String(resultados).length <=7){
+			display.innerHTML = resultados
+		}else{
+			display.innerHTML = String(resultados).substring(0,7)
+		}
 	}
 }
 
