@@ -91,6 +91,7 @@ var Calculadora = {
 		}
 	},
 	teclaUp(event){
+		// Tamaño normal
 		var tecla = event.target
 		if(tecla.alt != "mas"){		
 			tecla.style.height = "62.91px";
@@ -101,6 +102,7 @@ var Calculadora = {
 		}
 	},
 	teclaDown(event){
+		// Reduccion de tamaño
 		var tecla = event.target
 		if(tecla.alt != "mas"){
 			tecla.style.height = "59.91px";
